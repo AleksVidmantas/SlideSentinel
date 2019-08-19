@@ -2,8 +2,8 @@
 This modular test will be available for testing any gps receiver with a Base and Rover combination utlizing the Slide Sentinel interface. The point of these tests will assess what enviornments the gps receiver would be available for deployment. The tests will also assess whether they can retain a sub-centimeter reading which is a necessary for the Slide Sentinel project. 
 
 ## Receivers Included in initial tests	
-#### S2525F8-GL-RTK
-#### Piksi Multi 
+* S2525F8-GL-RTK
+* Piksi Multi 
 
 ## Whats being tested?
 ### Accuracy
