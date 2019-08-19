@@ -20,7 +20,7 @@ A survey grade gps must be used to compare the quality of the gps readings gathe
 ### Testing Scripts
 #### Setting up your scripting enviornment
 Make sure you have a version of python. If not inside of console type 
-'''
+'''python
 sudo apt-get install python 
 '''
 #### How they work
