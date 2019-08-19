@@ -12,9 +12,9 @@
 #include <RTClibExtended.h>
 
 /***************************************
- * Power consumption: 
- * 
- * Low Power:             4.53 mA 
+ * Power consumption:
+ *
+ * Low Power:             4.53 mA
  * Polling for position:  ~170 mA
  * Trasmitting:           ~190 mA (Z9-T require power supply which can supply 800mA, radio draws 50mA during tx)
  * Solar Charging:        Provides up to 180 mA current (direct sunlight on a bright day)
@@ -266,12 +266,21 @@ void setRTCAlarm()
     RTC_DS.alarmInterrupt(1, true);                //code to pull microprocessor out of sleep is tied to the time -> here
 }
 
+/*
+FUNCTION MODIFIED <--- Proposal, during updates to code we should have one of those cool super fun(not) CS16x Series style comments before functions to view modifications to code
+What I added 8/19/2019
+   *Made it read GPGGA NMEA Strings instead of PSTI
+   *Piksi said it can only read GGA, GLL, GSA, GSV, HDG, RMC, VTG and ZDA
+        |>Navspark GPS said same thing but still had option for PSTI string, not sure if piksi will output same message, will be found through testing
+        |>Updating if statement to GGA
+*/
 void readNMEA()
 {
     uint16_t i = 0; // safety index
     char input;
     char buffer[GPS_BUFFER_LEN];
     memset(buffer, '\0', sizeof(buffer));
+    //if (PSTI(buffer, '$') && PSTI(buffer, 'G') && PSTI(buffer, 'P') && PSTI(buffer, 'G') && PSTI(buffer, 'G') && PSTI(buffer, 'A'))
     if (PSTI(buffer, '$') && PSTI(buffer, 'P') && PSTI(buffer, 'S') && PSTI(buffer, 'T') && PSTI(buffer, 'I') && PSTI(buffer, ',') && PSTI(buffer, '0') && PSTI(buffer, '3') && PSTI(buffer, '0'))
     {
         while (Serial2.available())
