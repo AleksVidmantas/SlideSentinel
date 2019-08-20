@@ -25,7 +25,7 @@ If pip and python are already installed on your machine, skip to install command
 1. sudo apt install python-pip
 1. pip install geopy
 1. git clone https://github.com/OPEnSLab-OSU/SlideSentinel.git </br>
-</br>
+
 Now move into the folder with the testing scripts via console. 
 #### How they work
 testEnv.py is going to be the main testing enviornment where you enter a few pieces of information. First, the data must be extracted from the Slide Sentinel Interface and uploaded into the same folder as the test scripts. Note: The current test scripts only evaluate GPGGA formatted NMEA strings. Then within testEnv set the surveyLatitude and surveyLongitude to the gps coordinates recorded per location by the survey grade gps. Run testEnv script via console and the results will be printed to console.
