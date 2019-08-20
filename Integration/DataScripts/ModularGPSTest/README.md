@@ -36,3 +36,10 @@ To execute the scripts type python testEnv.py.
 Preferably, look for a location that suites all three testing enviornments with an open-sky location for the Base. The Base should be placed centrally between these three locations. The diagram below shows a visual example.  
 
 ![alt text](https://github.com/OPEnSLab-OSU/SlideSentinel/blob/TheRealReadingGPSData/Documentation/images/fieldDiagram.PNG)
+
+Testing in different enviornments tests multipath issues that all modern receivers face. Attenuating multipath can be reduced by creating a radio link between the Base and Rover. The Base can broadcast correctional information to the receiver via radio. This process is called differential gps or DGPS. 
+#### Procedure for testing locations 
+Before testing, ensure that you have a survey grade gps handy, and two receivers properly configured as a Base and Receiver. For precise measurements, bring a marker of some sort (wooden stake, metal rod, pvc pipe, etc..) to mark each location surveyed. The next following steps will guide the user through the data gathering process and often refer to the diagram above. 
+1. Survey the location of the Base
+1.2. Pre-program the Base with the surveyed location
+
