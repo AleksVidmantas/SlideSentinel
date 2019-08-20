@@ -33,4 +33,4 @@ testEnv.py is going to be the main testing enviornment where you enter a few pie
 To execute the scripts type python testEnv.py. 
 ### Setting up GPS Testing Grounds
 #### Finding test locations
-Preferably, look for a location that suites all three testing enviornments with an open-sky location for the Base. The Base should be placed centrally between these three locations. The diagram below shows a visual example. 
+Preferably, look for a location that suites all three testing enviornments with an open-sky location for the Base. The Base should be placed centrally between these three locations. The diagram below shows a visual example.  
