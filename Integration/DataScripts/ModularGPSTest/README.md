@@ -41,9 +41,9 @@ Testing in different enviornments tests multipath issues that all modern receive
 #### Procedure for testing locations 
 Before testing, ensure that you have a survey grade gps handy, and two receivers properly configured as a Base and Receiver. For precise measurements, bring a marker of some sort (wooden stake, metal rod, pvc pipe, etc..) to mark each location surveyed. The next following steps will guide the user through the data gathering process and often refer to the diagram above. 
 1. Survey the location of the Base
-  1.1. Set a Stake to mark the location of the surveyed position
-  1.2. Pre-program the Base with the surveyed location
-  1.3. Set the base in the location of the surveyed position 
+</b>1.1. Set a Stake to mark the location of the surveyed position
+</b>1.2. Pre-program the Base with the surveyed location
+</b>1.3. Set the base in the location of the surveyed position 
 2. Survey the location of the Rover 180&deg; sky-view location
   2.1. Set a Stake to mark the location of the surveyed position
   2.2. Record the surveyed GPS position
