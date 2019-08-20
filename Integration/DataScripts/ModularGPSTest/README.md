@@ -31,3 +31,6 @@ Now move into the folder with the testing scripts via console. The path follows 
 testEnv.py is going to be the main testing enviornment where you enter a few pieces of information. First, the data must be extracted from the Slide Sentinel Interface and uploaded into the data folder. Note: The current test scripts only evaluate GPGGA and PSTI formatted NMEA strings. The format is handled in NMEA_FORMAT.py. Within testEnv set the surveyLatitude and surveyLongitude to the gps coordinates recorded per location by the survey grade gps. Retrieve data from each position recorded, relabel the file to the location. The three locations used during testing is open sky, minor obtrusion, and major obtrusion. The testing suite currently tests one file at a time located in the testEnv.py. So configuring the target filename will be required by the user. 
 
 To execute the scripts type python testEnv.py. 
+### Setting up GPS Testing Grounds
+#### Finding test locations
+Preferably, look for a location that suites all three testing enviornments with an open-sky location for the Base. The Base should be placed centrally between these three locations. The diagram below shows a visual example. 
