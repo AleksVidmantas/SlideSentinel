@@ -40,19 +40,19 @@ Preferably, look for a location that suites all three testing enviornments with 
 Testing in different enviornments tests multipath issues that all modern receivers face. Attenuating multipath can be reduced by creating a radio link between the Base and Rover. The Base can broadcast correctional information to the receiver via radio. This process is called differential gps or DGPS. 
 #### Procedure for testing locations 
 Before testing, ensure that you have a survey grade gps handy, and two receivers properly configured as a Base and Receiver. For precise measurements, bring a marker of some sort (wooden stake, metal rod, pvc pipe, etc..) to mark each location surveyed. The next following steps will guide the user through the data gathering process and often refer to the diagram above. 
-1. Survey the location of the Base
-  1.1 Set a Stake to mark the location of the surveyed position
-  1.2 Pre-program the Base with the surveyed location
-  1.3 Set the base in the location of the surveyed position 
-2. Survey the location of the Rover 180&deg; sky-view location
-  2.1 Set a Stake to mark the location of the surveyed position
-  2.2 Record the surveyed GPS position
-  2.3 Set the Rover in the location of the surveyed position
-  2.4 Ensure the Base is broadcasting correctional information
-  2.5 Activate Receiver for one hour 
-  2.6 Extract data and save to a recognizable file name
-3. Repeat Process 2 for the 90&deg and 45&deg sky-view positions.
-4. Test the data with the py scripts
+Markup: 1. Survey the location of the Base
+          1.1 Set a Stake to mark the location of the surveyed position
+          1.2 Pre-program the Base with the surveyed location
+          1.3 Set the base in the location of the surveyed position 
+        2. Survey the location of the Rover 180&deg; sky-view location
+          2.1 Set a Stake to mark the location of the surveyed position
+          2.2 Record the surveyed GPS position
+          2.3 Set the Rover in the location of the surveyed position
+          2.4 Ensure the Base is broadcasting correctional information
+          2.5 Activate Receiver for one hour 
+          2.6 Extract data and save to a recognizable file name
+        3. Repeat Process 2 for the 90&deg and 45&deg sky-view positions.
+        4. Test the data with the py scripts
 
 Important Note: All tests will conduct a one hour long test with each receiver. Depending on the quality of the gps and the enviornment it was placed. Doesn't ensure that the length of time is adequate for it to receive a quality positional fix at a sub-centimeter level. For the GPS's listed above, they should be adequate in resolving a solution within the time frame specified.
 
