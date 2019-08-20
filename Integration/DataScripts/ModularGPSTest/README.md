@@ -51,7 +51,7 @@ Before testing, ensure that you have a survey grade gps handy, and two receivers
   - 2.4 Ensure the Base is broadcasting correctional information
   - 2.5 Activate Receiver for one hour 
   - 2.6 Extract data and save to a recognizable file name
-3. Repeat Process 2 for the 90&deg and 45&deg sky-view positions.
+3. Repeat Process 2 for the 90&deg; and 45&deg; sky-view positions.
 4. Test the data with the py scripts
 
 Important Note: All tests will conduct a one hour long test with each receiver. Depending on the quality of the gps and the enviornment it was placed. Doesn't ensure that the length of time is adequate for it to receive a quality positional fix at a sub-centimeter level. For the GPS's listed above, they should be adequate in resolving a solution within the time frame specified.
