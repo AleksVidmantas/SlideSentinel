@@ -19,10 +19,11 @@ Time to first fix(TTFF) finds the amount of time it takes to get a Fixed-Integer
 A survey grade gps must be used to compare the quality of the gps readings gathered by the receivers being tested. The GPS will be tested in three areas: open sky, minor obtrusion, major obtrusion. A total of four points will be recorded by the survey gps: Central location for the Base, and the three other positions recently discussed. Then test each position with one Base and Rover keeping the Base in a static open sky location (preferably in a central location to all three test positions). Run the gps receivers within the Slide Sentinel interface hot for one hour. NMEA-0183 strings will be saved to a SD card provided in the Slide Sentinel Interface. Once all three locations are surveyed and tested. Sufficient data has been gathered to test the GPS Receiver via Testing Scripts.
 ### Testing Scripts
 #### Setting up your scripting enviornment
-If pip and python are already installed on your machine, skip to install command 4. 
+If pip and python are already installed on your machine, skip to install command 4. Otherwise execute all of the following commands using a bash console. 
 1. sudo apt-get install python
 1. sudo apt update
 1. sudo apt install python-pip
 1. pip install geopy
+Next git clone https://github.com/OPEnSLab-OSU/SlideSentinel.git
 #### How they work
 testEnv.py is going to be the main testing enviornment where you enter a few pieces of information. First, the data must be extracted from the Slide Sentinel Interface and uploaded into the same folder as the test scripts. Note: The current test scripts only evaluate GPGGA formatted NMEA strings. Then within testEnv set the surveyLatitude and surveyLongitude to the gps coordinates recorded per location by the survey grade gps. Run testEnv script via console and the results will be printed to console.
