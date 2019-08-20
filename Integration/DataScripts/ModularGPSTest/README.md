@@ -42,15 +42,15 @@ Testing in different enviornments tests multipath issues that all modern receive
 Before testing, ensure that you have a survey grade gps handy, and two receivers properly configured as a Base and Receiver. For precise measurements, bring a marker of some sort (wooden stake, metal rod, pvc pipe, etc..) to mark each location surveyed. The next following steps will guide the user through the data gathering process and often refer to the diagram above. 
 1. Survey the location of the Base
   1. Set a Stake to mark the location of the surveyed position
-  1. Pre-program the Base with the surveyed location
-  1. Set the base in the location of the surveyed position 
+  2. Pre-program the Base with the surveyed location
+  3. Set the base in the location of the surveyed position 
 2. Survey the location of the Rover 180&deg; sky-view location
-  2. Set a Stake to mark the location of the surveyed position
+  1. Set a Stake to mark the location of the surveyed position
   2. Record the surveyed GPS position
-  2. Set the Rover in the location of the surveyed position
-  2. Ensure the Base is broadcasting correctional information
-  2. Activate Receiver for one hour 
-  2. Extract data and save to a recognizable file name
+  3. Set the Rover in the location of the surveyed position
+  4. Ensure the Base is broadcasting correctional information
+  5. Activate Receiver for one hour 
+  6. Extract data and save to a recognizable file name
 3. Repeat Process 2 for the 90&deg and 45&deg sky-view positions.
 4. Test the data with the py scripts
 
