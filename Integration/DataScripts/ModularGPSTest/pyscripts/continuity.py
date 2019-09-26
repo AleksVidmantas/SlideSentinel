@@ -21,33 +21,49 @@ Entry Pos   Name
 """
 import math
 from datetime import datetime
+from decimal import Decimal, ROUND_UP
+from ttff import test_ttff as tttff
+from NMEAStructure import NMEA_FORMAT as nf
 
-class test_availability():
+class test_continuity():
     def __init__(self, file_name):
         self.fname = file_name
         self.ttff_obj = tttff("NULL", 0)
 
+    def acquire_reacquire_average(self, aArray):
+        sum = count = 0
+        for i in range(len(aArray)):
+            sum += aArray[i]
+            count += 1
+        count += 1
+
+        avg = sum / count
 
     def event_continuity(self):
         f = open(self.fname, "r")
 
         availabilityArray = []
-        trackTime = False
-        beginTime = 0
+        reacquireArray = []
+        trackTimeInt = False
+        beginTimeInt = beginTimeReacquire = 0
         for x in f:
             entry = x.split(',')
             try:
-                if int(entry[6]) == 5:
-                    if trackTime == False:
-                        trackTime = True
-                        beginTime = entry[1]
+                if entry[format[3]] == 'R' or entry[format[3]] == '4':
+                    if trackTimeInt == False:
+                        trackTimeInt = True
+                        beginTimeInt = entry[format[2]]
+                        reacquireArray.append(int(self.ttff_obj.time_difference_in_seconds(beginTimeReacquire, entry[format[2]])))
 
                 else:
-                    if trackTime == True:
-                        availabilityArray.append(int(self.ttff_obj.time_difference_in_seconds(beginTime, entry[1])))
+                    if trackTimeInt == True:
+                        beginTimeReacquire = entry[format[2]]
+                        availabilityArray.append(int(self.ttff_obj.time_difference_in_seconds(beginTimeInt, entry[format[2]])))
 
-                    trackTime = False
+                    trackTimeInt = False
             except:
                 pass
 
-        return availabilityArray
+        avg = self.acquire_reacquire_average(reacquireArray)
+
+        return avg

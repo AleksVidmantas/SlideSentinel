@@ -24,9 +24,9 @@
 #define DEBUG 1 // allow printing to serial monitor,
 #define DEBUG_SD 1
 
-#define RTC_WAKE_PERIOD 30 // Interval to wake and take sample in Min, reset alarm based on this period (Bo - 5 min), 15 min
-#define STANDARD_WAKE 1800 // Length of time to take measurements under periodic wake condition
-#define ALERT_WAKE 1800     // Length of time to take measurements under acceleration wake condition
+#define RTC_WAKE_PERIOD 3 // Interval to wake and take sample in Min, reset alarm based on this period (Bo - 5 min), 15 min
+#define STANDARD_WAKE 180 // Length of time to take measurements under periodic wake condition
+#define ALERT_WAKE 180    // Length of time to take measurements under acceleration wake condition
 
 // Debugging flags
 #define TOGGLE_SLEEP true
@@ -40,14 +40,20 @@
 #define GPS_BUFFER_LEN 500
 #define BAUD 115200 // reading and writing occurs at
 
-#define GPS_EN_PIN A2      // Attach to RESET on relay
-#define GPS_DISABLE_PIN A4 // Attach to SET on relay
-#define ALERT_WAKE_PIN A3  // Attach A3 to int1 on accelerometer
-#define RTC_WAKE_PIN 5     // Attach to SQW pin on RTC
-#define SERIAL2_RX 12      // Rx pin for first serial port
-#define SERIAL2_TX 11      // Tx pin for first serial port
+#define GPS_EN_PIN A2       // Attach to set on relay
+#define GPS_DISABLE_PIN A4  // Attach to reSet on relay
+#define RADIO_EN_PIN 13     // Attach to SET on relay
+#define RADIO_DISABLE_PIN 9 // Attach to RESET on relay
+#define ALERT_WAKE_PIN A3   // Attach A3 to int1 on accelerometer
+#define RTC_WAKE_PIN 5      // Attach to SQW pin on RTC
+#define SERIAL2_RX 12       // Rx pin for first serial port
+#define SERIAL2_TX 11       // Tx pin for first serial port //Edit(8/29): We don't need this line. Serial2 communicates with GPS and doesnt transmit from feather to gps.
 #define BATTERYPIN A1
 #define chipSelect 4
+#define RADIOROUTE A0      // Driven High: Routes radio -> GNSS Rec Low: Radio -> Feather
+#define CARRIERDETECT 10   // Carrier detect pin from radio
+#define RADIORESET 6       // Direct reset pin on radio
+#define FORCEOFF_N A5      // Shuts down MAX3234
 
 // Function Prototypes
 void mmaCSVRead(Adafruit_MMA8451 device, String &to_fill, int count);
@@ -88,7 +94,7 @@ volatile bool nightFlag = false;
 
 volatile int HR = 8;        // Hr of the day we want alarm to go off
 volatile int MIN = 0;       // Min of each hour we want alarm to go off
-volatile int awakeFor = 20; // number of seconds to stay awake and take measurements for
+volatile int awakeFor = 180; // number of seconds to stay awake and take measurements for
 
 /**********************************************************************************************
    wakeUp_()
@@ -118,6 +124,7 @@ void setup()
 {
     setup_sd();
     Serial.begin(115200);
+    while(!Serial);
 
     //Setup UART
     Serial2Setup();             // GPS UART
@@ -150,10 +157,19 @@ void setup()
     Watchdog.enable(20000);
 #endif
     gps_on();
-}
 
+    //Setup Radio Data Route
+   // radioToGPS();
+    radioToFeather();  //alternatively radioToFeather
+
+    //Turn Radio On
+    radio_on();
+    //radio_off();
+}
+char messagggg[8] = "Hello";
 void loop()
 {
+  /*
     if (Serial.available())
         while (1)
             ;
@@ -162,6 +178,31 @@ void loop()
     alertFlagCheck(); // reset accelerometer interrupts,
     readNMEA();       // read from serial port if available
     tryStandby();
+
+    /**/
+    //Testing the Simple PCB
+    Serial.println("Testing Receivin");
+    /*
+    while(true){
+      char input;
+      if(Serial1.available()){
+        input = Serial1.read();
+        Serial.println(input);
+      }
+    }/**/
+
+    //Test the send and rec from pcb without latching relay
+    
+    sendMessage(messagggg, Serial1);
+    delay(2000);
+    /*
+    while(true){
+      Serial1.print("Hello");
+      delay(4000);
+      Serial.println("Loop");
+    }/**/
+    //Test the latch relay
+
 }
 
 /* Just a printing function */
@@ -205,6 +246,14 @@ void initializePins()
     pinMode(GPS_DISABLE_PIN, OUTPUT);
     digitalWrite(GPS_DISABLE_PIN, LOW);
     pinMode(BATTERYPIN, INPUT);
+    pinMode(RADIO_EN_PIN, OUTPUT);
+    digitalWrite(RADIO_EN_PIN, LOW);
+    pinMode(RADIO_DISABLE_PIN, OUTPUT);
+    digitalWrite(RADIO_DISABLE_PIN, LOW);
+    pinMode(CARRIERDETECT, INPUT);
+    pinMode(RADIOROUTE, OUTPUT);
+    pinMode(FORCEOFF_N, OUTPUT);
+    digitalWrite(FORCEOFF_N, HIGH);
 }
 
 void initializeRTC()
@@ -664,6 +713,32 @@ void gps_off()
     digitalWrite(GPS_DISABLE_PIN, LOW);
 }
 
+// Turn the radio module on
+void radio_on()
+{
+    digitalWrite(RADIO_EN_PIN, HIGH);
+    delay(10);
+    digitalWrite(RADIO_EN_PIN, LOW);
+#if DEBUG 
+    Serial.println("Radio is turned on");
+#endif
+
+}
+
+// Turn off the radio module, save power during sleep
+// Functions affect physical latch on feather relay
+void radio_off()
+{
+    digitalWrite(RADIO_DISABLE_PIN, HIGH);
+    delay(10);
+    digitalWrite(RADIO_DISABLE_PIN, LOW);
+#if DEBUG 
+    Serial.println("Radio is turned off");
+#endif
+
+
+}
+
 void setup_sd()
 {
     Serial.println("Initializing SD card...");
@@ -785,4 +860,20 @@ void checkNight(char *UTCtime)
     }
     else
         Serial.println("Light outside");
+}
+
+//Routes radio data to feather
+void radioToFeather(){
+  digitalWrite(RADIOROUTE, LOW);
+ #if DEBUG 
+  Serial.println("Mux switch radio data to feather");
+ #endif
+}
+
+//Routes radio data to GPS
+void radioToGPS(){
+  digitalWrite(RADIOROUTE, HIGH);
+ #if DEBUG
+  Serial.println("Mux switch radio to GPS");
+ #endif
 }

@@ -197,7 +197,7 @@ void dispatchBest(HardwareSerial &serialPort, char nmea[])
 	strcat(buffer, "0");
 	strcat(buffer, ",");
 	fillGPSMsgFormat(nmea, buffer);
-
+  Serial.println("Sending Best NMEAs to Base");
 	//send 10 copies of the message
 	for (uint8_t i = 0; i < 50; i++)
 	{

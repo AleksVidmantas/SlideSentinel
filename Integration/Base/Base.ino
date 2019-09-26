@@ -1,4 +1,4 @@
-/*
+  /* m,  
     Title:          Slide Sentinel Base Station
     Last modified:  May 10th, 2019 
     Author:         Kamron Ebrahimi
@@ -28,7 +28,7 @@ https://postproxy.azurewebsites.net
 
 #define DEBUG 1
 #define DEBUG_SD 1
-#define TOGGLE_SATCOM true         //turns SATCOM uploads on or off
+#define TOGGLE_SATCOM false         //turns SATCOM uploads on or off
 #define FORCE_SATCOM_FAILURE false //forces satcom to always fail for debug purposes
 #define TOGGLE_UPDATES true        //turns on interrupt based Hub configuration
 #define FORCE_UPDATE false         //forces the update routine to occur for testing
@@ -48,7 +48,7 @@ bool is_retry;
 volatile bool update_flag;
 bool str_flag;
 bool wake_complete;
-uint16_t accel_count;
+uint16_t accel_count;   
 uint16_t failed_count;
 uint16_t retry_count;
 uint16_t satcom_count;
@@ -71,6 +71,8 @@ void setup()
 {
 #if DEBUG
   Serial.begin(115200);
+  while(!Serial);
+  Serial.println("Begin Setup");
 #endif
   setup_sd();
   Serial2_setup(); //Serial port used to communicate with the Freewave Z9-T
@@ -97,7 +99,7 @@ void setup()
   retry_timer = millis();
 
   Serial.print("Initializing satcom to upload once every ");
-  Serial.print(satcom_freq);
+  Serial.print(satcom_freq);  
   Serial.println(" messages...");
   Serial.println("Setup Complete.. ");
 }
@@ -274,7 +276,7 @@ void diagnose()
 
 bool verify(char messageIn[])
 {
-  if (str_flag)
+  if (str_flag) 
   {
     str_flag = false;
     if (strcmp(getValueAt(messageIn, 0), "/GPS") == 0)

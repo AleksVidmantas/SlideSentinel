@@ -1,24 +1,4 @@
 #!/usr/bin/python
-"""
-#NMEA-0183 Structure for GGA messages
-#   0      1            2          3        4           5  6   7   8    9   10  11  11  12   13
-#$GPGGA, HHMMSS, ddmm.mmmmmmmmmmm, a, ddmm.mmmmmmmmmmm, a, x, xx, x.x, x.x, M, x.x, M, x.x, xxxx*hh
-Entry Pos   Name
-    0       NMEA Format ID
-    1       UTC Time
-    2       Latitude
-    3       N/S Indicator
-    4       Longitude
-    5       E/W Indicator
-    6       GPS Quality Indicator: 4 == Fixed Integer, 5 == Floating Integer
-    7       Satellites Used
-    8       HDOP
-    9       Altitude
-    10      Geoidal Seperation
-    11      Age of Differential GPS data
-    12      DGPS Station ID
-    13      Checksum
-"""
 import math
 from datetime import datetime
 from NMEAStructure import NMEA_FORMAT as nf
@@ -62,8 +42,8 @@ class test_ttff:
                 if firstEntry == False:
                     recordingStartTime = entry[format[2]]
                     firstEntry = True
-                check_entry = int(entry[format[3]])
-                if entry[format[3]] == 'R' or check_entry == 4:
+                
+                if entry[format[3]] == 'R' or entry[format[3]] == '4':
                     if trackTime == False:
                         beginTime = entry[format[2]]
                         trackTime = True
