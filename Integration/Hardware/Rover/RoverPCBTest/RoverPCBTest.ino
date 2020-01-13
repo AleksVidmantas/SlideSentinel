@@ -86,8 +86,7 @@ void Serial2Setup(uint16_t baudrate)
 void setup()
 {
     Serial.begin(115200);
-    while (!Serial)
-        ;
+
 
     // SPI INIT
     SPI.begin();
@@ -272,7 +271,7 @@ void advancedTest()
                 Serial.println("sendtoWait failed");
             delay(500);
             break;
-        case '#':       // Make sure this works
+        case '#': // Make sure this works
             Serial.println("Turning BASE station OFF");
             // Drive Low to receive ack from BASE
             digitalWrite(SPDT_SEL, LOW);
@@ -313,6 +312,8 @@ void advancedTest()
     {
         Serial.print(Serial2.read());
     }
+
+    aguDemo();
 }
 
 void mmaSetupSlideSentinel()
@@ -400,7 +401,7 @@ void configInterrupts(Adafruit_MMA8451 device)
     // MMA8451_REG_TRANSIENT_THS
     // Transient interrupt threshold in units of .06g
     //Acceptable range is 1-127
-    dataToWrite = 0x2F;
+    dataToWrite = 0x0F;
     device.writeRegister8_public(MMA8451_REG_TRANSIENT_THS, dataToWrite);
 
     dataToWrite = 0;
@@ -488,3 +489,104 @@ void setup_sd()
         Serial.println("initialization complete");
     }
 }
+
+void aguDemo()
+{
+    int wakeInterval = 60000; // ms
+    int counter = wakeInterval;
+    uint32_t time = 0;
+    useRelay(RADIO_RESET);
+    useRelay(GNSS_RESET);
+    while (1)
+    {
+        if (counter >= wakeInterval)
+        {
+
+            Serial.println("Turning BASE station OFF");
+            // Drive Low to receive ack from BASE
+            digitalWrite(SPDT_SEL, LOW);
+            memset(buf, '\0', sizeof(buf));
+            data[0] = 'b';
+            if (manager.sendtoWait(data, sizeof(data), SERVER_ADDRESS))
+            {
+                // Now wait for a reply from the server
+                uint8_t len = sizeof(buf);
+                uint8_t from;
+                if (manager.recvfromAckTimeout(buf, &len, 2000, &from))
+                {
+                    Serial.print("got reply from : 0x");
+                    Serial.print(from, HEX);
+                    Serial.print(": ");
+                    Serial.println((char *)buf);
+                    Serial.println("Switching: RADIO TX ------> FEATHER M0");
+                    digitalWrite(SPDT_SEL, LOW);
+                    useRelay(RADIO_RESET);
+                    useRelay(GNSS_RESET);
+                }
+                else
+                {
+                    Serial.println("No reply, is serial_reliable_datagram_server running?");
+                }
+            }
+            else
+                Serial.println("sendtoWait failed");
+            delay(500);
+
+            setRTCAlarm();
+            
+            Serial.println("Sleeping");
+            //Disable USB
+            USB->DEVICE.CTRLA.reg &= ~USB_CTRLA_ENABLE;
+            //Enter sleep mode
+            SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+            __DSB();
+            __WFI();
+            //...Sleep
+
+            clearRTCAlarm();
+
+            //Enable USB
+            USB->DEVICE.CTRLA.reg |= USB_CTRLA_ENABLE;
+            Serial.begin(115200);
+            useRelay(RADIO_SET);
+            
+            delay(15000);
+
+
+
+
+            Serial.println("Turning BASE station ON");
+            memset(buf, '\0', sizeof(buf));
+            data[0] = 'a';
+            if (manager.sendtoWait(data, sizeof(data), SERVER_ADDRESS))
+            {
+                // Now wait for a reply from the server
+                uint8_t len = sizeof(buf);
+                uint8_t from;
+                if (manager.recvfromAckTimeout(buf, &len, 2000, &from))
+                {
+                    Serial.print("got reply from : 0x");
+                    Serial.print(from, HEX);
+                    Serial.print(": ");
+                    Serial.println((char *)buf);
+                    Serial.println("Switching: RADIO TX ------> GNSS");
+                    digitalWrite(SPDT_SEL, HIGH);
+                    useRelay(GNSS_SET);
+                }
+                else
+                {
+                    Serial.println("No reply, is serial_reliable_datagram_server running?");
+                }
+            }
+            else
+                Serial.println("sendtoWait failed");
+            delay(500);
+            time = millis();
+        }
+        counter = millis() - time;
+    }
+}
+
+// Wake
+// send command to turn base GNSS receiver on
+// after wake cycle, go back to sleep
