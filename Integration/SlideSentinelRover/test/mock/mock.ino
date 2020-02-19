@@ -1,212 +1,110 @@
-#include <Arduino.h>
-#include <SPI.h>
-#include <wiring_private.h>
-#include <RHReliableDatagram.h>
-#include <RH_Serial.h>
-#include <SD.h>
-#include "ArduinoJson.h"
+StaticJsonDocument<RH_SERIAL_MAX_MESSAGE_LEN> mail;     // global messaging variable
 
-// RADIO INTERFACE
-#define RST 5
+enum State {
+    WAKE,
+    HANDSHAKE, 
+    UPDATE,
+    POLL,
+    UPLOAD,
+    SLEEP
+} 
 
-// Switch Pin Def
-#define SPDT_SEL A0
+enum Verbosity{
+    QUIET,
+    NORMAL,
+    VERBOSE,
+    VERY_VERBOSE,
+    DEBUG
+} 
 
-// Relay constants
-#define GNSS_ON_PIN A2
-#define GNSS_OFF_PIN 12
+Verbosity verbosity = NORMAL;   // global variable which dictates the bevaior of Controller.status()
+State state = WAKE;             // global state variable 
 
-// SD CARD CONSTANTS
-#define SD_CS 10
+while(1){
+    switch(state){
+        case WAKE:
+            FSController.init();            // re-init the SD card, sometimes it becomes uninitialized when waking from sleep
+            FSController.newDir();          // create a new directory for this wake cycle
+            PMCOntroller.enableRadio();     // turn on the radio 
+            state = HANDSHAKE;
+        case HANDSHAKE:
+            IMUController.getFlag(mail);        // check if the Accelerometer woke the device 
+            if(!ComController.request(mail)){   // make a request for service to the base station
+                FSController.log(mail);         // if the request fails log the failure ERR
+                state = SLEEP;
+            }       
+            state = UPDATE;
+        case UPDATE:
+            ConManager.update(mail);            
+                                                        /* "Controller Manager" 
+                                                         * Iterates over every controller, passing the config data collected from the base
+                                                         * during the request. Each Controller gets this data passed to its .update() method
+                                                         * which dynamically checks if there is data for the particualr controller in the packet.
+                                                         * If there is data for the controller, the controller updates its internal variables 
+                                                         * thus changing the behavior of the device. 
+                                                         */
+            case = POLL; 
+        case POLL:
+            PMController.enableGNSS();          // Turn on the GNSS receiver
+            TimingController.start();           // start the millis() timer
+            while(TimingController.isAwake()){  // while the timer is less than the wake duration...
+                if(GNSSController.poll(mail))   // check if parsed data came from the receiver
+                    FSController.log(mail);     // if so log the data, DAT
+            }
+            PMController.disableGNSS();         // turn off the receiver
+            state = UPLOAD;
+        case UPLOAD:
+            ConManager.status(mail, verbosity);              
+                                                        /* 
+                                                         * Collect the message to send to the base. Iterates over every controller, 
+                                                         * and checks for data calling the base class Controller.status() method. 
+                                                         * For example the GNSSController.status() will append any RTK positional info 
+                                                         * to the packet for the wake cycle. If the verbosity flag is in debug though
+                                                         * the GNSSController may include hdop and satellites view values to the packet
+                                                         * for greater information about the rover. 
+                                                         * The PMController may append the battery voltage to the packet as another example.
+                                                         */
 
-// PMC REGULATOR
-#define VCC2_EN 21 //SCL
-
-// Switch Pin Def
-#define SPDT_SEL A0
-
-// Radio Serial
-#define ROCK_TX 11
-#define ROCK_RX 12
-#define ROCK_ONOFF 9
-#define ROCK_NETAV A5
-#define ROCK_RINGAL A3
-
-// Reliable Datagram usage
-#define CLIENT_ADDRESS 1
-#define SERVER_ADDRESS 2
-RH_Serial driver(Serial1);
-RHReliableDatagram manager(driver, SERVER_ADDRESS);
-uint8_t buf[RH_SERIAL_MAX_MESSAGE_LEN];
-uint8_t data[] = "{\"type\":\"ACK\"}";
-StaticJsonDocument<RH_SERIAL_MAX_MESSAGE_LEN> doc;
-const char* type;
-
-
-#define IRIDIUM_BAUD 115200
-Uart Serial2(&sercom1, ROCK_RX, ROCK_TX, SERCOM_RX_PAD_3, UART_TX_PAD_0);
-void SERCOM1_Handler()
-{
-    Serial2.IrqHandler();
-}
-
-void Serial2Setup(uint16_t baudrate)
-{
-    Serial2.begin(baudrate);
-    pinPeripheral(ROCK_TX, PIO_SERCOM); //Private functions for serial communication
-    pinPeripheral(ROCK_RX, PIO_SERCOM);
-}
-
-void useRelay(uint8_t pin)
-{
-    digitalWrite(pin, HIGH);
-    delay(4);
-    digitalWrite(pin, LOW);
-}
-
-void setup()
-{
-    Serial.begin(115200);
-
-    // Radio Serial
-    Serial1.begin(115200);
-
-    // Set up Reliable datagram socket
-    if (!manager.init())
-        Serial.println("init failed");
-
-    // Iridium Serial
-    Serial2Setup(IRIDIUM_BAUD);
-    pinMode(ROCK_ONOFF, OUTPUT);
-    pinMode(ROCK_NETAV, INPUT);
-    pinMode(ROCK_RINGAL, INPUT);
-
-    // setup SD
-    pinMode(SD_CS, OUTPUT);
-    setup_sd();
-
-    // setup Relay
-    pinMode(GNSS_ON_PIN, OUTPUT);
-    pinMode(GNSS_OFF_PIN, OUTPUT);
-    useRelay(GNSS_OFF_PIN);
-
-    // SPDT INIT, Feather receives data
-    pinMode(SPDT_SEL, OUTPUT);
-    digitalWrite(SPDT_SEL, HIGH);
-}
-
-void loop()
-{
-    //test();
-    memset(buf, '\0', sizeof(buf));
-    if (manager.available())
-    {
-        Serial.println("here");
-        // Turn this high so the base can send an ACK!
-        digitalWrite(SPDT_SEL, HIGH);
-        // Wait for a message addressed to us from the client
-        uint8_t len = sizeof(buf);
-        uint8_t from;
-        if (manager.recvfromAck(buf, &len, &from))
-        {
-            Serial.print("got request from : 0x");
-            Serial.print(from, HEX);
-            Serial.print(": ");
-            Serial.println((char *)buf);
-            deserializeJson(doc, buf);
-            type = doc["type"];
-
-            // Send a reply back to the originator client
-            if (!manager.sendtoWait(data, sizeof(data), from)) //SEND CONFIG DATA TIED TO THIS
-                Serial.println("sendtoWait failed");
-        }
-        // Start RTK
-        if (strcmp(type, "RTS") == 0)
-        {
-            Serial.println("RTS received");
-            Serial.println("(A0 HIGH) GNSS -----> RADIO");
-            digitalWrite(SPDT_SEL, LOW);
-            useRelay(GNSS_ON_PIN);
-        }
-        // End RTK
-        else
-        {
-            Serial.println("(A0 HIGH) FEATHER_M0 -----> RADIO");
-            digitalWrite(SPDT_SEL, HIGH);
-            useRelay(GNSS_OFF_PIN);
-            Serial.println("not RTS");
-        }
+            FSController.log(mail);                 // log the packet collected
+            if(!ComController.upload(mail))         // attempt to upload the packet to the base
+                FSController.log(mail);             // if a failure occurs mail is populated with error message, log this to SD
+            state = SLEEP;
+        case SLEEP:
+            PMController.disableRadio();            // turn of off the radio
+            TimingController.setAlarm();            // set the alarm to wake up
+            PMController.sleep();                   // go to sleep
+            state = WAKE;
     }
 }
 
-void test()
-{
-    char cmd;
-    if (Serial.available())
-    {
-        cmd = Serial.read();
-        switch (cmd)
-        {
-        case '1':
-            Serial.println("gnss on");
-            useRelay(GNSS_ON_PIN);
-            break;
-        case '2':
-            Serial.println("gnss off");
-            useRelay(GNSS_OFF_PIN);
-            break;
-        case '3':
-            Serial1.println("TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST");
-            Serial.println("Writing data out...");
-            break;
-        case '4':
-            Serial.println("(A0 LOW) GNSS -----> RADIO");
-            digitalWrite(SPDT_SEL, LOW);
-            break;
-        case '5':
-            Serial.println("(A0 HIGH) FEATHER_M0 -----> RADIO");
-            digitalWrite(SPDT_SEL, HIGH);
-            break;
-        case '6':
-            Serial2.println("TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST");
-            Serial.println("Writing data out...");
-            break;
-        case '7':
-            digitalWrite(ROCK_ONOFF, HIGH);
-            Serial.println("Turning SATCOM on");
-            break;
-        case '8':
-            digitalWrite(ROCK_ONOFF, LOW);
-            Serial.println("Turning SATCOM off");
-            break;
-        case '9':
-            digitalWrite(VCC2_EN, HIGH);
-            Serial.println("Turning on second voltage rail");
-            break;
-        case '0':
-            digitalWrite(VCC2_EN, LOW);
-            Serial.println("Turning off second voltage rail");
-            break;
-        }
-    }
-    if (Serial1.available())
-    {
-        char c = Serial1.read();
-        Serial.print(c);
-    }
-}
+/* POSSIBLE MESSAGE TYPES
+RTS,
+CONF,
+DAT, 
+ERR, 
+*/
 
-void setup_sd()
-{
-    Serial.println("Initializing SD card...");
+/* UPDATE                   
+FSController        []
+IMUController       [accelerometer sensitivity]
+TimingController    [wake duration, sleep duration]
+ComController       [retries, timeout]  
+PMController        []
+GNSSController      []
+ConManager          [verboisy]      <--- We could migrate the verbosity to the ConManager, instead of making it global
+*/
 
-    if (!SD.begin(SD_CS))
-    {
-        Serial.println("SD Initialization failed!");
-        Serial.println("Will continue anyway, but SD functions will be skipped");
-    }
-    else
-    {
-        Serial.println("initialization complete");
-    }
-}
+// Ther verbosity of the rover dictates how much of this data is appended to the packet prior to sending
+/* STATUS                 
+FSController        [available SD card space, number of wake cycles to date]
+IMUController       [accelerometer sensitivity]
+TimingController    [wake duration, sleep duration]
+ComController       [retries, timeout, number of dropped packets]  
+PMController        [battery voltage]
+GNSSController      [hdop, pdop, satellites view during the wake cycle, report resolution (maybe the user is fine with RTK float data)]
+ConManager          [verboisy]      <--- We could migrate the verbosity to the ConManager, instead of making it global
+*/
+
+
+
+

@@ -13,4 +13,8 @@ void Console::debug(const char* message)
         Serial.println(message);
 }
 
+void Console::debugInt(int m){
+    Serial.println(m);
+}
+
 Console console; 

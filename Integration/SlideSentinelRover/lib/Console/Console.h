@@ -11,6 +11,7 @@ class Console
     public:
         Console();
         void setDebug(bool debug);
+        void debugInt(int m);
         void debug(const char* message);
 };
 

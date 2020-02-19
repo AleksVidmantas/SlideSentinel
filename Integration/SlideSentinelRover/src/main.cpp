@@ -14,6 +14,7 @@
 #include "RTClibExtended.h"
 #include "SN74LVC2G53.h"
 #include "VoltageReg.h"
+#include "RTCController.h"
 
 /****** Test Routine ******/
 #define ADVANCED true
@@ -71,10 +72,12 @@ GNSSController *gnssController;
 // Instatiate RTC Object
 #define RTC_INT 5
 #define RTC_WAKE_PERIOD 1
+#define RTC_SLEEP_PERIOD 2
 RTC_DS3231 RTC_DS;
 volatile int HR = 8;
 volatile int MIN = 0;
 volatile int awakeFor = 20;
+RTCController rtcController(&RTC_DS, RTC_INT, RTC_WAKE_PERIOD, RTC_SLEEP_PERIOD);
 
 void clearRTCAlarm() {
   // clear any pending alarms
@@ -153,7 +156,7 @@ bool setup_sd() {
 void advancedTest() {
   char cmd;
   if (Serial.available()) {
-    DateTime now = RTC_DS.now();
+    DateTime now = rtcController.getDate();
     cmd = Serial.read();
     switch (cmd) {
     case '1':
@@ -296,8 +299,7 @@ void setup() {
   imuController.init();
 
   // RTC INIT
-  pinMode(RTC_INT, INPUT_PULLUP); // active low interrupts
-  initializeRTC();
+  rtcController.init();
 
   // must be done after first call to attac1hInterrupt()
   pmController.init();
