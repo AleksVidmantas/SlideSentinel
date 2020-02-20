@@ -14,7 +14,6 @@ class RTCController : public Controller {
         uint8_t m_wakeTime;
         uint8_t m_sleepTime;
 
-        void m_initializeRTC();
         void m_clearRTCAlarm();
         static void m_RTC_ISR();
 

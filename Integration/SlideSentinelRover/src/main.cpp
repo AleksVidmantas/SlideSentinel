@@ -72,7 +72,7 @@ GNSSController *gnssController;
 // Instatiate RTC Object
 #define RTC_INT 5
 #define RTC_WAKE_PERIOD 1
-#define RTC_SLEEP_PERIOD 2
+#define RTC_SLEEP_PERIOD 1
 RTC_DS3231 RTC_DS;
 volatile int HR = 8;
 volatile int MIN = 0;
@@ -154,6 +154,7 @@ bool setup_sd() {
 }
 
 void advancedTest() {
+  volatile bool flagRTC;
   char cmd;
   if (Serial.available()) {
     DateTime now = rtcController.getDate();
@@ -216,6 +217,7 @@ void advancedTest() {
       Serial.print(now.minute(), DEC);
       Serial.print(':');
       Serial.println(now.second(), DEC);
+      rtcController.setRTCAlarm();
       break;
     case 's':
       Serial.println("Sleeping");
@@ -262,12 +264,22 @@ void advancedTest() {
 
     case 'p':
       Serial.println("Turning BASE station OFF");
-      char test[] = "{\"sensor\":\"gps\",\"time\":1351824120}";
-      deserializeJson(doc, test);
+      //char test[] = "{\"sensor\":\"gps\",\"time\":1351824120}";
+      //deserializeJson(doc, test);
       comController->upload(doc);
       pmController.disableGNSS();
       delay(500);
       break;
+
+    case 'z':{
+      flagRTC = rtcController.getFlag();
+      if(flagRTC)
+        Serial.println("Flag was triggered :)");
+      else 
+        Serial.println("Flag wasnt triggered :(");
+      break;
+    }
+      
     }
   }
 

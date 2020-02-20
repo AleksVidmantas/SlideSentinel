@@ -13,26 +13,6 @@ RTCController::RTCController(RTC_DS3231 * RTC_DS, uint8_t intPin, uint8_t wakeTi
         m_interruptPin = intPin;
     }
 
-void RTCController::m_initializeRTC(){
-    if (!m_RTC_DS->begin())
-    {
-        console.debug("Couldn't find RTC");
-        while (1)
-            ;
-    }
-
-    //clear any pending alarms
-    m_clearRTCAlarm();
-
-    //Set SQW pin to OFF (in my case it was set by default to 1Hz)
-    //The output of the DS3231 INT pin is connected to this pin
-    //It must be connected to arduino Interrupt pin for wake-up
-    m_RTC_DS->writeSqwPinMode(DS3231_OFF);
-
-    //Set alarm1
-    m_clearRTCAlarm();
-}
-
 void RTCController::m_clearRTCAlarm(){
     // Clears pending alarms
     m_RTC_DS->armAlarm(1, false);
@@ -59,7 +39,23 @@ bool RTCController::getFlag(){
 
 void RTCController::init(){
     pinMode(m_interruptPin, INPUT_PULLUP);
-    m_initializeRTC();
+    if (!m_RTC_DS->begin())
+    {
+        console.debug("Couldn't find RTC");
+        while (1)
+            ;
+    }
+
+    //clear any pending alarms
+    m_clearRTCAlarm();
+
+    //Set SQW pin to OFF (in my case it was set by default to 1Hz)
+    //The output of the DS3231 INT pin is connected to this pin
+    //It must be connected to arduino Interrupt pin for wake-up
+    m_RTC_DS->writeSqwPinMode(DS3231_OFF);
+
+    //Set alarm1
+    m_clearRTCAlarm();
 }
 
 void RTCController::setRTCAlarm(){
