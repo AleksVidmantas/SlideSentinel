@@ -52,6 +52,7 @@ bool FSController::setupWakeCycle(char *timestamp, char *format) { MARK;
         m_sd.chdir(m_curDir) && m_mkFile(m_DATA) && m_mkFile(m_DIAG)))
     return false;
 
+  m_file.open(m_DATA, O_WRONLY | O_APPEND); // Test
   m_write(format);     // write the data header
   if (!m_file.close()) // close the ptr
     return false;
@@ -65,8 +66,8 @@ bool FSController::m_mkFile(const char *name) { MARK;
 }
 
 bool FSController::m_setFile(const char *file) { MARK;
-  if (!m_sd.chdir() && m_sd.chdir(m_curDir) &&
-      m_file.open(file, O_WRONLY | O_APPEND))
+  if (!(m_sd.chdir() && m_sd.chdir(MAIN) && m_sd.chdir(m_curDir) &&
+      m_file.open(file, O_WRONLY | O_APPEND)))
     return false;
   return true;
 }
@@ -103,6 +104,7 @@ void FSController::m_SDspace() { MARK;
 void FSController::m_cycles() { m_cycle++; }
 
 void FSController::status(SSModel &model) {
+  m_SDspace();
   model.setSpace(m_spaceMB);
   model.setCycles(m_cycle);
 }

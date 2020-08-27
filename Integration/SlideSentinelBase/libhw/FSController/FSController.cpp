@@ -27,7 +27,7 @@ bool FSController::m_setup() {
 
   for (int i = 0; i < m_num_rovers; i++) {
     m_clear();
-    sprintf(m_buf, "ROVER%d", i);
+    sprintf(m_buf, "ROVER%d", i); // Change to +1? (filed listed as rover0/1)
     LOGD << m_buf;
     m_curDir = m_buf;
 

@@ -44,7 +44,7 @@ void SSModel::m_serializePkt(JsonDocument &doc) {
 }
 
 void SSModel::m_addData(JsonDocument &doc) {
-  JsonArray data = doc.createNestedArray(SS_DATA);
+  JsonArray data = doc.createNestedArray(); //TEST: removing parameter SS_DATA to solve bug?
   data.add(m_mode);
   data.add(m_gps_time.wn);
   data.add(m_gps_time.tow);

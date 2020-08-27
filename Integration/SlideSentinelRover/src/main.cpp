@@ -205,6 +205,7 @@ void execute() { MARK;
       fsController.logDiag(model.toProp());
 
       // make a request, send diagnostics/receive props
+      /*
       if (!comController->request(model)) {
         fsController.logDiag(model.toError());
         rtcController.incrementBackoff();
@@ -212,7 +213,7 @@ void execute() { MARK;
         state = SLEEP;
         break;
       }
-
+      */
       Serial.println("Transitioning to UPDATE...");
       state = UPDATE;
       break;
